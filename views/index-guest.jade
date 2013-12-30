@@ -1,0 +1,14 @@
+//
+   Created by sanek on 28.12.13.
+extends layout
+block content
+    p Welcome to #{title}
+    #content
+        h1 MUSIC Site Choise more better of two diferent songs
+        p First you need login to your account, and then you can use this service. And create your Most Likely favorite playlist
+    .container
+        article(ng-view)
+    script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular.min.js')
+    script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular-route.min.js')
+    script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular-sanitize.min.js')
+    script(type='text/javascript', src='/javascripts/lib/socket.io.min.js')

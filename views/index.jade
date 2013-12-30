@@ -1,0 +1,76 @@
+extends layout
+
+block content
+    p Welcome to #{title}
+    #content(ng-controller="MainCtrl")
+        h1 MUSIC Site Choise more better of two diferent songs
+        p First you need login to your account, and then you can use this service. And create your Most Likely favorite playlist
+        .alert.alert-danger(ng-bind='error', ng-show='error')
+        .container
+            if !authorized
+                .login(ng-controller="LoginCtrl", ng-show="form==='login'")
+                    form.form-horizontal(role='form', ng-submit="login()", name="loginForm")
+                        .form-group
+                            label.col-sm-2.control-label(for='inputEmail3') Email
+                            .col-sm-10
+                                input#inputEmail3.form-control(type='email', placeholder='Email', ng-model="email")
+                        .form-group
+                            label.col-sm-2.control-label(for='inputPassword3') Password
+                            .col-sm-10
+                                input#inputPassword3.form-control(type='password', placeholder='Password', ng-model="password")
+                        .form-group
+                            .col-sm-offset-2.col-sm-10
+                                .checkbox
+                                    label
+                                        input(type='checkbox', ng-model="stayOnline")
+                                        | Remember me
+                        .form-group
+                            .col-sm-offset-2.col-sm-10
+                                button.btn.btn-default(type='submit') Sign in
+                                a.btn.btn-xs(ng-click="setForm('register')")
+                                    | Sign up
+                                    a.btn.btn-xs(ng-click="setForm('forgot')")
+                                        | Forgot pass?
+                .register(ng-controller="RegisterCtrl", ng-show="form==='register'")
+                    form.form-horizontal(role='form', ng-submit="register()", name="regForm")
+                        .form-group
+                            label.col-sm-2.control-label(for='inputEmail3') Email
+                            .col-sm-10
+                                input#inputEmail3.form-control(type='email', placeholder='Email', ng-model="email")
+                        .form-group
+                            label.col-sm-2.control-label(for='inputPassword3') Password
+                            .col-sm-10
+                                input#inputPassword3.form-control(type='password', placeholder='Password', ng-model="password")
+                        .form-group
+                            label.col-sm-2.control-label(for='inputConfirmPassword') Repeat Password
+                            .col-sm-10
+                                input#inputPassword3.form-control(type='password', placeholder='Password', ng-model="confirmationPassword")
+                        .form-group
+                            .col-sm-offset-2.col-sm-10
+                                button.btn.btn-default(type='submit') Sign up
+                                a.btn.btn-xs(ng-click="setForm('login')")
+                                    | Sign in
+                                    a.btn.btn-xs(ng-click="setForm('forgot')")
+                                        | Forgot pass?
+                .forgot(ng-controller="ForgotCtrl", ng-show="form==='forgot'")
+                    form.form-horizontal(role='form', ng-submit="forgot()", name="forgotForm")
+                        .form-group
+                            label.col-sm-2.control-label(for='inputEmail3') Email
+                            .col-sm-10
+                                input#inputEmail3.form-control(type='email', placeholder='Email', ng-model="email")
+                        .form-group
+                            .col-sm-offset-2.col-sm-10
+                                button.btn.btn-default(type='submit') Send
+                                a.btn.btn-xs(ng-click="setForm('login')")
+                                    | Sign in
+                                    a.btn.btn-xs(ng-click="setForm('register')")
+                                        | Sign up
+        article(ng-view)
+
+
+    script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular.min.js')
+    script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular-route.min.js')
+    script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular-sanitize.min.js')
+    script(type='text/javascript', src='/javascripts/lib/socket.io.min.js')
+    script(type='text/javascript', src='/javascripts/app.js')
+    script(type='text/javascript', src='/javascripts/service/socketService.js')

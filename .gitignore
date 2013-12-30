@@ -16,3 +16,7 @@
 *.exe
 *.out
 *.app
+
+/.idea
+/atlassian-ide-plugin.xml
+/node_modules

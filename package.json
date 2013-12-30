@@ -1,0 +1,17 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "3.4.7",
+    "jade": "*",
+    "cookie": "~0.1.0",
+    "connect-mongo": "~0.4.0",
+    "socket.io": "~0.9.16",
+    "mongoskin": "~0.6.1",
+    "crypto": "0.0.3"
+  }
+}
