@@ -1,6 +1,6 @@
 var nodemailer  = require('../node_modules/nodemailer');
 
-function EM(emailSettings) {
+function EM() {
     // Create a Direct transport object
     this.transport = nodemailer.createTransport("SMTP", {
         service: "Gmail",
@@ -9,7 +9,6 @@ function EM(emailSettings) {
             pass: "23rwbfb4bdb"
         }
     });
-    this.settings = emailSettings;
     console.log('SMTP transport configured');
 }
 

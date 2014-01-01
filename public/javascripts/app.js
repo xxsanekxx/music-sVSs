@@ -43,7 +43,6 @@
             }
             $http.post('/login', payload, config).success(function(socket) {
                 console.log(socket);
-                $window.location.href = '/music/';
             }).error(function(err) {
                 $rootScope.error = err;
             });
@@ -61,7 +60,6 @@
             $http.post('/registration', payload, config).success(function(socket) {
                 console.log(socket);
                 $rootScope.error = 'Check your email for activate account!!';
-                $location.path('/login');
 
             }).error(function(err) {
                 $rootScope.error = err;
@@ -81,7 +79,6 @@
             $http.post('/registration', payload, config).success(function(socket) {
                 console.log(socket);
                 $rootScope.error = 'Check your email for activate account!!';
-                $location.path('/login');
 
             }).error(function(err) {
                 $rootScope.error = err;
