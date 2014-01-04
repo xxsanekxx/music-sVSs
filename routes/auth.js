@@ -16,7 +16,7 @@ var criptpassword = function(str, saldo) {
     return crypto.createHash('md5').update(str + saldo).digest("hex");
 };
 var em = new EM();
-
+var check = require('validator').check;
 // Поправить передачу БД, this не пашет в коолбеках. И
 function AuthHandler(database, emailSettings) {
     "use strict";
@@ -27,135 +27,140 @@ function AuthHandler(database, emailSettings) {
         console.log('Warning: AuthHandler constructor called without "new" operator');
         return new AuthHandler(database, emailSettings);
     }
-    var users = database.mongo.collection("users");
+    this.users = database.mongo.collection("users");
 
-    this.isLoggedInMiddleware = function(req, res, next) {
-        if (!req.session.authorized) {
-            req.session.roles = ['guest'];
-        }
-        return next();
-    };
+}
 
-    this.login = function(req, res, next) {
+AuthHandler.prototype.isLoggedInMiddleware = function(req, res, next) {
+    if (!req.session.authorized) {
+        req.session.roles = ['guest'];
+    }
+    return next();
+};
 
-        var email = req.body.email;
-        var password = req.body.password;
-        var stayOnline = req.body.stayOnline;
-        users.findOne({email: email.toLowerCase(), password: criptpassword(password), emailcheck: true, "$or": [{banned: {"$exists": false}}, {banned: false}] }, function(err, item) {
-            if (err || item === null){
+AuthHandler.prototype.login = function(req, res, next) {
+    var self = this;
+    var email = req.body.email;
+    var password = req.body.password;
+    var stayOnline = req.body.stayOnline;
+    self.users.findOne({email: email.toLowerCase(), password: criptpassword(password), emailcheck: true, "$or": [{banned: {"$exists": false}}, {banned: false}] }, function(err, item) {
+        if (err || item === null){
 
-                console.log('error to login');
-                return next({
-                    error: true,
-                    status: 401,
-                    message: 'Check your email or password'
-                });
-            }
-            req.session.authorized = true;
-            req.session.user_id = item._id;
-            req.session.username = item.email;
-            req.session.roles.concat(item.roles);
-            //Если стоит галочка "Запомнить меня" то записываем сессию и передаем ее номер
-            if (!!stayOnline) {
-                var hours = 24 * 60 * 60 * 1000 * 2; // 48 hours
-                req.session.cookie.expires = new Date(Date.now() + hours);
-                req.session.cookie.maxAge = hours;
-            }
-            return res.send(200);
-
-        });
-    };
-
-    this.logout = function(req, res, next) {
-        if (!req.session.authorized){
+            console.log('error to login');
             return next({
                 error: true,
                 status: 401,
-                message: 'You are not logged'
+                message: 'Check your email or password'
             });
         }
-
-        req.session.authorized = false;
-        delete req.session.username;
-        delete req.session.user_id;
-        delete req.session.roles;
-        return res.redirect('/');
-    };
-
-    this.registration = function(req, res, next) {
-        var email = req.body.email;
-        var password = req.body.password;
-        var confirmationPassword = req.body.confirmationPassword;
-        var check = require('validator').check;
-        if (!check(email, 'Bad email').len(6, 64).isEmail() ||
-            !check(password, 'Bad pass').notNull() ||
-            !check(password, 'Bad confirm pass').equals(confirmationPassword)){
-            return next({
-                error: true,
-                message: 'Bad pass or email'
-            });
+        req.session.authorized = true;
+        req.session.user_id = item._id;
+        req.session.username = item.email;
+        req.session.roles = req.session.roles.concat(item.roles);
+        console.log(req.session);
+        //Если стоит галочка "Запомнить меня" то записываем сессию и передаем ее номер
+        if (!!stayOnline) {
+            var hours = 24 * 60 * 60 * 1000 * 2; // 48 hours
+            req.session.cookie.expires = new Date(Date.now() + hours);
+            req.session.cookie.maxAge = hours;
         }
+        return res.send(200);
 
-        users.findOne({email: email.toLowerCase()}, function(err, item) {
-            if (item === null){
-                var account = {
-                    activationCode: randomHash(),
-                    toSend: email.toLowerCase(),
-                };
-                users.insert({
-                    email: email.toLowerCase(),
-                    type: "init",
-                    password: criptpassword(password),
-                    emailcheck: false, active_code: account.activationCode, roles: ['user'],
-                    date_reg: new Date()
-                }, {safe: true}, function(err, result) {
+    });
+};
 
+AuthHandler.prototype.logout = function(req, res, next) {
+    if (!req.session.authorized){
+        return next({
+            error: true,
+            status: 401,
+            message: 'You are not logged'
+        });
+    }
+
+    req.session.authorized = false;
+    delete req.session.username;
+    delete req.session.user_id;
+    delete req.session.roles;
+    return res.redirect('/');
+};
+
+AuthHandler.prototype.registration = function(req, res, next) {
+    var self = this;
+    var email = req.body.email;
+    var password = req.body.password;
+    var confirmationPassword = req.body.confirmationPassword;
+
+    if (!check(email, 'Bad email').len(6, 64).isEmail() ||
+        !check(password, 'Bad pass').notNull() ||
+        !check(password, 'Bad confirm pass').equals(confirmationPassword)){
+        return next({
+            error: true,
+            message: 'Bad pass or email'
+        });
+    }
+
+    self.users.findOne({email: email.toLowerCase()}, function(err, item) {
+        if (item === null){
+            var account = {
+                activationCode: randomHash(),
+                toSend: email.toLowerCase(),
+            };
+            self.users.insert({
+                email: email.toLowerCase(),
+                type: "init",
+                password: criptpassword(password),
+                emailcheck: false, active_code: account.activationCode, roles: ['user'],
+                date_reg: new Date()
+            }, {safe: true}, function(err, result) {
+
+                if (err) return next({
+                    error: true,
+                    message: 'Cannot insert user'
+                });
+                //console.log(result);
+                //req.session.authorized = true;
+                req.session.user_id = result[0]._id;
+                req.session.username = result[0].email;
+                req.session.roles.concat(result[0].roles);
+
+                em.dispatchActivationLink(account, function(err, response) {
                     if (err) return next({
                         error: true,
-                        message: 'Cannot insert user'
+                        message: "Don't send verification"
                     });
-                    //console.log(result);
-                    //req.session.authorized = true;
-                    req.session.user_id = result[0]._id;
-                    req.session.username = result[0].email;
-                    req.session.roles.concat(result[0].roles);
 
-                    em.dispatchActivationLink(account, function(err, response) {
-                        if (err) return next({
-                            error: true,
-                            message: "Don't send verification"
-                        });
-
-                        return res.send(200);
-                    });
+                    return res.send(200);
                 });
-            } else return next({
-                error: true,
-                message: 'User already exists'
             });
+        } else return next({
+            error: true,
+            message: 'User already exists'
         });
-    };
+    });
+};
 
-    this.verification = function(req, res, next) {
-        users.findOne({active_code: req.param('c'), emailcheck: false}, function(err, user) {
-            if (!user) {
+AuthHandler.prototype.verification = function(req, res, next) {
+    var self = this;
+    self.users.findOne({active_code: req.param('c'), emailcheck: false}, function(err, user) {
+        if (!user) {
+            return next({
+                error: true,
+                message: 'Invalid Activation code!'
+            });
+        }
+        user.emailcheck = true;
+        self.users.save(user, {safe:true}, function(err, result) {
+            if (!result) {
                 return next({
                     error: true,
-                    message: 'Invalid Activation code!'
+                    message: 'Activation failed'
                 });
             }
-            user.emailcheck = true;
-            users.save(user, {safe:true}, function(err, result) {
-                if (!result) {
-                    return next({
-                        error: true,
-                        message: 'Activation failed'
-                    });
-                }
-                return res.redirect('/');
-            });
+            return res.redirect('/');
         });
-    };
-}
+    });
+};
+
 
 module.exports = AuthHandler;

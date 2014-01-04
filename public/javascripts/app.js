@@ -34,7 +34,7 @@
 
         }]);
 
-    angular.module('sVSs').controller('LoginCtrl', ['$rootScope', '$scope', '$http', '$window', function($rootScope, $scope, $http, $window) {
+    angular.module('sVSs').controller('LoginCtrl', ['$rootScope', '$scope', '$http', '$window', '$route', function($rootScope, $scope, $http, $window, $route) {
 
         $scope.login = function() {
             var payload = 'email=' + $scope.email+'&password='+$scope.password+'&stayOnline=' + $scope.stayOnline;
@@ -42,14 +42,16 @@
                 headers: {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}
             }
             $http.post('/login', payload, config).success(function(socket) {
+                $route.reload();
                 console.log(socket);
+
             }).error(function(err) {
                 $rootScope.error = err;
             });
         }
 
     }]);
-    angular.module('sVSs').controller('RegisterCtrl', ['$rootScope', '$scope', '$http', '$location', function($rootScope, $scope, $http, $location) {
+    angular.module('sVSs').controller('RegisterCtrl', ['$rootScope', '$scope', '$http', '$location', '$route', function($rootScope, $scope, $http, $location, $route) {
 
         $scope.register = function() {
             console.log($scope.email);
@@ -70,13 +72,13 @@
     }]);
     angular.module('sVSs').controller('ForgotCtrl', ['$rootScope', '$scope', '$http', '$location', function($rootScope, $scope, $http, $location) {
 
-        $scope.register = function() {
+        $scope.forgot = function() {
             console.log($scope.email);
             var payload = 'email=' + $scope.email+'&password='+$scope.password+'&confirmationpassword='+$scope.confirmationpassword;
             var config = {
                 headers: {'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'}
             }
-            $http.post('/registration', payload, config).success(function(socket) {
+            $http.post('/forgot', payload, config).success(function(socket) {
                 console.log(socket);
                 $rootScope.error = 'Check your email for activate account!!';
 
