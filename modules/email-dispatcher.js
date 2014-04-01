@@ -6,7 +6,7 @@ function EM() {
         service: "Gmail",
         auth: {
             user: "lifefortraveling@gmail.com",
-            pass: "23rwbfb4bdb"
+            pass: ""
         }
     });
     console.log('SMTP transport configured');
